@@ -95,3 +95,107 @@ Once you log in through a text terminal, you are typically greeted by a command 
 ```
 
 # The Linux Kernel
+
+```
+
+Once the boot loader pulls the kernel and the initial RAM-based filesystem (initramfs) into memory, the kernel officially takes control of the system. As the heart of the operating system, its first priority is to transform raw hardware components into a coordinated, usable system.
+
+As soon as the kernel is active in RAM, it begins a comprehensive configuration process to "claim" the hardware. This initialization is driven by internal kernel functions like start_kernel() and a sequence of initcalls, which systematically bring the hardware to life:
+
+Memory Management
+The kernel maps out the system’s physical RAM. It decides how to share this memory between the operating system and the applications you will run.
+
+Processor Setup
+It identifies and initializes all available CPUs. This prepares the system to handle multiple tasks simultaneously.
+
+I/O and Storage
+The kernel finds and configures all attached input/output (I/O) subsystems and storage devices. This ensures it can communicate with everything from your keyboard to your hard drive.
+
+The kernel does more than manage hardware; it also starts the user space, which is the environment where your programs run. It uses the drivers and files stored in the initramfs to create what is known as "early userspace."
+
+This early userspace is critical because it contains the logic required to find, check, and mount the primary root filesystem on your disk. Once that filesystem is verified and ready, the kernel transitions from this temporary environment to the permanent operating system. Finally, it loads the essential applications needed to finish the boot sequence.
+
+```
+
+# /sbin/init and Services
+'''
+Once the kernel completes the hardware setup and mounts the root filesystem, it launches a critical program: /sbin/init.
+
+Note: On systemd distros (we'll discuss systemd shortly), /sbin/init is typically a symlink to the systemd binary (e.g., /lib/systemd/systemd or /usr/lib/systemd/systemd).
+
+/sbin/init is the first process to run on the system and serves as the "parent" of all other processes.
+
+The Role of the Init Process
+The init process is responsible for bringing the system to a usable state and managing it until the computer is powered off. Its primary responsibilities include:
+
+Process Initiation
+It starts the background services and applications required for the system to function.
+
+System Management
+Most processes on your system can trace their origin back to init. The only exceptions are kernel processes, which the kernel starts directly to manage internal operating system details.
+
+Ongoing Maintenance
+init acts as a manager for all non-kernel processes, cleaning up after them when they finish and restarting login services as users log in and out.
+
+System Shutdown
+It ensures that all services are stopped correctly and data is saved before the system powers down.
+
+From SysVinit to Modern Standards
+
+Historically, Linux used a method called SysVinit (System V init), a convention based on 1980s UNIX systems.
+
+•
+Sequential Loading
+SysVinit started services one by one in a specific order.
+
+•
+Runlevels
+The system moved through different "runlevels," which were collections of scripts that started or stopped specific services depending on the system mode (such as single-user mode or multi-user graphical mode).
+
+While this method was the standard for decades, it was slow and rigid. To improve boot speeds and management flexibility, systemd adoption is now near-universal across mainstream desktop and server distributions. Most have moved away from the sequential SysVinit approach, with only deliberate exceptions remaining, such as anti-systemd forks or lightweight/embedded distributions (Alpine).
+
+Today, systemd has become the dominant standard for system initialization across most Linux distributions. While modern systems still provide compatibility tools for older System V utilities, service management is now far more efficient.
+'''
+
+# systemd Features
+n modern Linux distributions, systemd serves as the system and service manager. It replaces the older SysVinit process, streamlining how your computer boots and manages background tasks.
+
+Core advantages:
+
+Parallelization:
+Unlike older methods that started services one by one (serialized), systemd uses aggressive parallelization. This allows multiple services to launch simultaneously, significantly reducing total boot time.
+
+Declarative Configuration:
+systemd replaces complex, error-prone shell scripts with simple .service configuration files. These files explicitly define dependencies (what must start first), execution commands, and success criteria.
+
+The New init:
+On a systemd-enabled machine, the traditional /sbin/init is actually a symbolic link to /lib/systemd/systemd. This means systemd is the very first process to start (PID 1) and manages all others.
+
+The systemctl command is your primary tool for interacting with the systemd manager. Use the following syntax to manage services like the Apache web server (apache2 is common on Debian/Ubuntu; on Red Hat/Fedora it's usually httpd).
+
+Note: In most commands, you can omit the .service extension; systemd will assume you are referring to a service unit.
+
+1. Real-Time Service Control
+
+To change the state of a service on your currently running system, use start, stop, or restart, run the following command:
+
+
+$ sudo systemctl start apache2
+
+$ sudo systemctl stop apache2
+
+$ sudo systemctl restart apache2
+2. Boot-Time Configuration
+
+To determine whether a service should launch automatically when the computer turns on, use enable or disable:
+
+
+$ sudo systemctl enable apache2
+
+$ sudo systemctl disable apache2
+3. Monitoring Service Health
+
+To check if a service is running, view its recent logs, or see its process ID (PID), use the status command:
+
+
+$ sudo systemctl status apache2
