@@ -29,3 +29,10 @@ To check if a service is running, view its recent logs, or see its process ID (P
 
 $ sudo systemctl status apache2
 ```
+4. 
+```
+cat: used to type out a file (or combine files).
+head: used to show the first few lines of a file.
+tail: used to show the last few lines of a file.
+man: used to view documentation.
+```
